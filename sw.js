@@ -1,5 +1,5 @@
 var cache_version = `
-Last modified: 2022/11/23 11:17:26
+Last modified: 2022/11/23 11:17:53
 `;
 // cache versionを手作業で操作するのが面倒なので、日付をversionにして勝手に更新するようにしておく
 cache_version.trim('\n'); // 改行コードを削除
