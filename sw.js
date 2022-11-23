@@ -1,9 +1,9 @@
 var cache_version = `
-Last modified: 2022/11/23 11:36:39
+Last modified: 2022/11/23 11:46:33
 `;
 // cache versionを手作業で操作するのが面倒なので、日付をversionにして勝手に更新するようにしておく
 cache_version.trim('\n'); // 改行コードを削除
-// cache_version = 'v1'
+//cache_version = 'v2'
 // DOM側のjsファイルとのコミュニケーション用途
 const broadcast = new BroadcastChannel('sw-channel');
 broadcast.onmessage = (event) => {
@@ -18,7 +18,7 @@ const addResourcesToCache = async (resources) => {
 
 
 self.addEventListener('activate', (event) => {
-    event.waitUntil(enableNavigationPreload());
+    //event.waitUntil(enableNavigationPreload());
     event.waitUntil(deleteOldCaches());
     broadcast.postMessage({
         message: 'activated'

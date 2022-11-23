@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="manifest" href="manifest.json">
+    <link href="./bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <title>Service Worker Template</title>
+</head>
+
+<body>
+    <div class="container-sm">
+        <div class="row">
+            <h1>Service Worker Template</h1>
+            <button class="btn btn-danger" onclick="deleteSWthenReload();">service workerを削除して再読み込み</button>
+            <p>
+                <a href="https://tetsuakibaba.github.io/service_worker_template/" target="_blank">github page</a>
+            </p>
+            <p>
+                このページはPWAの振る舞いを学習、把握するために作成したサイトです。基本的にはmdn web docsをそのまま利用し、振る舞いを確かめています。
+            </p>
+        </div>
+
+        <div class="row mt-4">
+            <h2>Service Worker未登録ファイル</h2>
+            <div class="col-6"><img class="img-fluid" src="pexels-tetsuaki-baba-5341364.jpg"></div>
+            <div class="col-6"><video class="img-fluid" src="video.mp4" controls></video></div>
+        </div>
+
+        <a href="index.html">登録済ファイルへのリンク（index1.htm)</a>
+
+
+        <div class="card mt-4" style="">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">Debug information area</h6>
+                <p id="debug_area" class="small card-text">
+                </p>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
