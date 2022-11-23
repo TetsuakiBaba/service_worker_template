@@ -16,6 +16,7 @@
     <div class="container-sm">
         <div class="row">
             <h1>Service Worker Template</h1>
+            <small id="cache_name"></small>
             <button class="btn btn-danger" onclick="deleteSWthenReload();">service workerを削除して再読み込み</button>
             <p>
                 <a href="https://tetsuakibaba.github.io/service_worker_template/" target="_blank">github page</a>
@@ -34,7 +35,7 @@
         <a href="index2.html">未登録ファイルへのリンク（index2.html)</a>
 
 
-        <div class="card mt-4" style="">
+        <div class="card mt-4">
             <div class="card-body">
                 <h6 class="card-subtitle mb-2 text-muted">Debug information area</h6>
                 <p id="debug_area" class="small card-text">
@@ -58,7 +59,9 @@
         }
         const broadcast = new BroadcastChannel('sw-channel');
         broadcast.onmessage = (event) => {
-            console.log(event);
+            if (event.data.cache_name) {
+                document.querySelector('#cache_name').innerText = event.data.cache_name;
+            }
         };
         const registerServiceWorker = async () => {
             if ('serviceWorker' in navigator) {

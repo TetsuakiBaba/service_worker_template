@@ -1,5 +1,5 @@
 var cache_version = `
-Last modified: 2022/11/23 11:46:33
+Last modified: 2022/11/23 11:53:09
 `;
 // cache versionを手作業で操作するのが面倒なので、日付をversionにして勝手に更新するようにしておく
 cache_version.trim('\n'); // 改行コードを削除
@@ -9,6 +9,7 @@ const broadcast = new BroadcastChannel('sw-channel');
 broadcast.onmessage = (event) => {
     console.log(event);
 };
+
 
 
 const addResourcesToCache = async (resources) => {
@@ -22,6 +23,9 @@ self.addEventListener('activate', (event) => {
     event.waitUntil(deleteOldCaches());
     broadcast.postMessage({
         message: 'activated'
+    })
+    broadcast.postMessage({
+        cache_name: cache_version
     })
 });
 
