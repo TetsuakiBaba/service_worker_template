@@ -1,5 +1,5 @@
 var cache_version = `
-Last modified: 2022/11/23 12:26:40
+Last modified: 2022/11/23 12:31:29
 `;
 // cache versionを手作業で操作するのが面倒なので、日付をversionにして勝手に更新するようにしておく
 cache_version.trim('\n'); // 改行コードを削除
@@ -36,7 +36,8 @@ self.addEventListener('install', (event) => {
             'icon-192.png',
             'pexels-tetsuaki-baba-8111237.jpg',
             'productionID_4023899.mp4',
-            'sw.js'
+            'sw.js',
+            'manifest.json'
         ])
     );
     broadcast.postMessage({
@@ -51,7 +52,7 @@ self.addEventListener('fetch', (e) => {
             return r || fetch(e.request).then((response) => {
                 return caches.open(cache_version).then((cache) => {
                     //console.log('[Service Worker] Caching new resource: ' + e.request.url);
-                    //cache.put(e.request, response.clone());
+                    cache.put(e.request, response.clone());
                     return response;
                 });
             });
