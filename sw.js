@@ -1,5 +1,5 @@
 var cache_version = `
-Last modified: 2022/11/23 12:10:14
+Last modified: 2022/11/23 12:16:44
 `;
 // cache versionを手作業で操作するのが面倒なので、日付をversionにして勝手に更新するようにしておく
 cache_version.trim('\n'); // 改行コードを削除
@@ -21,9 +21,7 @@ const addResourcesToCache = async (resources) => {
 self.addEventListener('activate', (event) => {
     //event.waitUntil(enableNavigationPreload());
     event.waitUntil(deleteOldCaches());
-    broadcast.postMessage({
-        message: 'activated'
-    })
+
     broadcast.postMessage({
         cache_name: cache_version
     })
@@ -58,8 +56,9 @@ self.addEventListener('fetch', (e) => {
             });
         })
     );
+
     broadcast.postMessage({
-        message: 'called fetch event'
+        cache_name: cache_version
     })
 });
 
