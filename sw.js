@@ -1,9 +1,9 @@
 var cache_version = `
-Last modified: 2022/11/23 10:48:57
+Last modified: 2022/11/23 11:17:26
 `;
 // cache versionを手作業で操作するのが面倒なので、日付をversionにして勝手に更新するようにしておく
 cache_version.trim('\n'); // 改行コードを削除
-
+cache_version = 'v1'
 // DOM側のjsファイルとのコミュニケーション用途
 const broadcast = new BroadcastChannel('sw-channel');
 broadcast.onmessage = (event) => {
@@ -81,6 +81,7 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('install', (event) => {
     event.waitUntil(
         addResourcesToCache([
+            'index.html',
             'bootstrap.min.css',
             'icon-192.png',
             'pexels-tetsuaki-baba-8111237.jpg',
