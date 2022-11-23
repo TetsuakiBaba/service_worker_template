@@ -1,5 +1,5 @@
 var cache_version = `
-Last modified: 2022/11/23 12:16:44
+Last modified: 2022/11/23 12:26:40
 `;
 // cache versionを手作業で操作するのが面倒なので、日付をversionにして勝手に更新するようにしておく
 cache_version.trim('\n'); // 改行コードを削除
@@ -36,6 +36,7 @@ self.addEventListener('install', (event) => {
             'icon-192.png',
             'pexels-tetsuaki-baba-8111237.jpg',
             'productionID_4023899.mp4',
+            'sw.js'
         ])
     );
     broadcast.postMessage({
