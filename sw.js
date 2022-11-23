@@ -1,76 +1,117 @@
-//'use strict';
-const CACHE_VERSION = 'v1';
-const CACHE_NAME = `${registration.scope}!${CACHE_VERSION}`;
+var cache_version = `
+Last modified: 2022/11/23 10:48:57
+`;
+// cache versionを手作業で操作するのが面倒なので、日付をversionにして勝手に更新するようにしておく
+cache_version.trim('\n'); // 改行コードを削除
 
-// キャッシュするファイルをセットする
-const urlsToCache = [
-    '.',
-    'sample.png',
-    'placeholder.mp4'
-];
+// DOM側のjsファイルとのコミュニケーション用途
+const broadcast = new BroadcastChannel('sw-channel');
+broadcast.onmessage = (event) => {
+    console.log(event);
+};
 
-/* global registration */
 
-self.addEventListener('install', function (event) {
-    event.waitUntil(
-        // キャッシュを開く
-        caches.open(CACHE_NAME)
-            .then((cache) => {
-                // 指定されたファイルをキャッシュに追加する
-                return cache.addAll(urlsToCache);
-            })
-    );
+const addResourcesToCache = async (resources) => {
+    const cache = await caches.open(cache_version);
+    await cache.addAll(resources);
+};
+
+const putInCache = async (request, response) => {
+    const cache = await caches.open(cache_version);
+    await cache.put(request, response);
+};
+
+const cacheFirst = async ({ request, preloadResponsePromise, fallbackUrl }) => {
+    // First try to get the resource from the cache
+    const responseFromCache = await caches.match(request);
+    if (responseFromCache) {
+        return responseFromCache;
+    }
+
+    // Next try to use (and cache) the preloaded response, if it's there
+    const preloadResponse = await preloadResponsePromise;
+    if (preloadResponse) {
+        console.info('using preload response', preloadResponse);
+        //putInCache(request, preloadResponse.clone());
+        return preloadResponse;
+    }
+
+    // Next try to get the resource from the network
+    try {
+        const responseFromNetwork = await fetch(request);
+        // response may be used only once
+        // we need to save clone to put one copy in cache
+        // and serve second one
+        //putInCache(request, responseFromNetwork.clone());
+        return responseFromNetwork;
+    } catch (error) {
+        const fallbackResponse = await caches.match(fallbackUrl);
+        if (fallbackResponse) {
+            return fallbackResponse;
+        }
+        // when even the fallback response is not available,
+        // there is nothing we can do, but we must always
+        // return a Response object
+        return new Response('Network error happened', {
+            status: 408,
+            headers: { 'Content-Type': 'text/plain' },
+        });
+    }
+};
+
+// Enable navigation preload
+const enableNavigationPreload = async () => {
+    if (self.registration.navigationPreload) {
+        // Enable navigation preloads!
+        await self.registration.navigationPreload.enable();
+    }
+    broadcast.postMessage({
+        message: 'called enableNavigationPreload'
+    })
+};
+
+self.addEventListener('activate', (event) => {
+    event.waitUntil(enableNavigationPreload());
+    event.waitUntil(deleteOldCaches());
+    broadcast.postMessage({
+        message: 'activated'
+    })
 });
 
-self.addEventListener('activate', function (event) {
+self.addEventListener('install', (event) => {
     event.waitUntil(
-        caches.keys().then((cacheNames) => {
-            return cacheNames.filter((cacheName) => {
-                // このスコープに所属していて且つCACHE_NAMEではないキャッシュを探す
-                return cacheName.startsWith(`${registration.scope}!`) &&
-                    cacheName !== CACHE_NAME;
-            });
-        }).then((cachesToDelete) => {
-            return Promise.all(cachesToDelete.map((cacheName) => {
-                // いらないキャッシュを削除する
-                return caches.delete(cacheName);
-            }));
+        addResourcesToCache([
+            'bootstrap.min.css',
+            'icon-192.png',
+            'pexels-tetsuaki-baba-8111237.jpg',
+            'production ID_4023899.mp4',
+        ])
+    );
+    broadcast.postMessage({
+        message: 'called install event'
+    })
+});
+
+self.addEventListener('fetch', (event) => {
+    event.respondWith(
+        cacheFirst({
+            request: event.request,
+            preloadResponsePromise: event.preloadResponse,
+            fallbackUrl: 'fallback.png',
         })
     );
+    broadcast.postMessage({
+        message: 'called fetch event'
+    })
 });
-self.addEventListener('fetch', function (event) {
-    event.respondWith(
-        caches.match(event.request)
-            .then((response) => {
-                // キャッシュ内に該当レスポンスがあれば、それを返す
-                if (response) {
-                    return response;
-                }
 
-                // 重要：リクエストを clone する。リクエストは Stream なので
-                // 一度しか処理できない。ここではキャッシュ用、fetch 用と2回
-                // 必要なので、リクエストは clone しないといけない
-                let fetchRequest = event.request.clone();
+const deleteCache = async key => {
+    await caches.delete(key)
+}
 
-                return fetch(fetchRequest)
-                    .then((response) => {
-                        if (!response || response.status !== 200 || response.type !== 'basic') {
-                            // キャッシュする必要のないタイプのレスポンスならそのまま返す
-                            return response;
-                        }
-
-                        // 重要：レスポンスを clone する。レスポンスは Stream で
-                        // ブラウザ用とキャッシュ用の2回必要。なので clone して
-                        // 2つの Stream があるようにする
-                        let responseToCache = response.clone();
-
-                        caches.open(CACHE_NAME)
-                            .then((cache) => {
-                                cache.put(event.request, responseToCache);
-                            });
-
-                        return response;
-                    });
-            })
-    );
-});
+const deleteOldCaches = async () => {
+    const cacheKeepList = [cache_version];
+    const keyList = await caches.keys()
+    const cachesToDelete = keyList.filter(key => !cacheKeepList.includes(key))
+    await Promise.all(cachesToDelete.map(deleteCache));
+}

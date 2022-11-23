@@ -7,23 +7,72 @@
     <meta name="description" content="">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <link rel="manifest" href="manifest.json">
-    <title>インストール可能なウェブサイト</title>
+    <link href="./bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <title>Service Worker Template</title>
 </head>
 
 <body>
-    <h1>インストール可能なウェブサイト</h1>
-    <img src="sample.png" style="width:50%">
-    <video src="placeholder.mp4" controls style="width:50%;"></video>
+    <div class="container-sm">
+        <div class="row">
+            <h1>Service Worker Template</h1>
+            <p>
+                このページはPWAの振る舞いを学習、把握するために作成したサイトです。基本的にはmdn web docsをそのまま利用し、振る舞いを確かめています。
+            </p>
+        </div>
+
+        <div class="row mt-4">
+            <h2>Service Worker登録済みファイル</h2>
+            <div class="col-6"><img class="img-fluid" src="pexels-tetsuaki-baba-8111237.jpg"></div>
+            <div class="col-6"><video class="img-fluid" src="production ID_4023899.mp4" controls></video></div>
+        </div>
+
+        <div class="row mt-4">
+            <h2>Service Worker未登録ファイル</h2>
+            <div class="col-6"><img class="img-fluid" src="pexels-tetsuaki-baba-5341364.jpg"></div>
+            <div class="col-6"><video class="img-fluid" src="video.mp4" controls></video></div>
+        </div>
+
+        <div class="card mt-4" style="">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">Debug information area</h6>
+                <p id="debug_area" class="small card-text">
+                </p>
+            </div>
+        </div>
+    </div>
+
+
     <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').then(function (registration) {
-                // 登録成功
-                console.log('ServiceWorker の登録に成功しました。スコープ: ', registration.scope);
-            }).catch(function (err) {
-                // 登録失敗
-                console.log('ServiceWorker の登録に失敗しました。', err);
-            });
-        }
+        const broadcast = new BroadcastChannel('sw-channel');
+        broadcast.onmessage = (event) => {
+            console.log(event);
+        };
+        const registerServiceWorker = async () => {
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.register(
+                        'sw.js',
+                        {
+                            scope: '/',
+                        }
+                    );
+                    if (registration.installing) {
+                        console.log('Service worker installing');
+                    } else if (registration.waiting) {
+                        console.log('Service worker installed');
+                    } else if (registration.active) {
+                        console.log('Service worker active');
+                    }
+                } catch (error) {
+                    console.error(`Registration failed with ${error}`);
+                }
+            }
+        };
+
+        // ...
+
+        registerServiceWorker();
     </script>
 </body>
 
