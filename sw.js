@@ -1,9 +1,9 @@
 var cache_version = `
-Last modified: 2022/11/23 11:17:53
+Last modified: 2022/11/23 11:36:39
 `;
 // cache versionを手作業で操作するのが面倒なので、日付をversionにして勝手に更新するようにしておく
 cache_version.trim('\n'); // 改行コードを削除
-cache_version = 'v1'
+// cache_version = 'v1'
 // DOM側のjsファイルとのコミュニケーション用途
 const broadcast = new BroadcastChannel('sw-channel');
 broadcast.onmessage = (event) => {
@@ -16,59 +16,6 @@ const addResourcesToCache = async (resources) => {
     await cache.addAll(resources);
 };
 
-const putInCache = async (request, response) => {
-    const cache = await caches.open(cache_version);
-    await cache.put(request, response);
-};
-
-const cacheFirst = async ({ request, preloadResponsePromise, fallbackUrl }) => {
-    // First try to get the resource from the cache
-    const responseFromCache = await caches.match(request);
-    if (responseFromCache) {
-        return responseFromCache;
-    }
-
-    // Next try to use (and cache) the preloaded response, if it's there
-    const preloadResponse = await preloadResponsePromise;
-    if (preloadResponse) {
-        console.info('using preload response', preloadResponse);
-        //putInCache(request, preloadResponse.clone());
-        return preloadResponse;
-    }
-
-    // Next try to get the resource from the network
-    try {
-        const responseFromNetwork = await fetch(request);
-        // response may be used only once
-        // we need to save clone to put one copy in cache
-        // and serve second one
-        //putInCache(request, responseFromNetwork.clone());
-        return responseFromNetwork;
-    } catch (error) {
-        const fallbackResponse = await caches.match(fallbackUrl);
-        if (fallbackResponse) {
-            return fallbackResponse;
-        }
-        // when even the fallback response is not available,
-        // there is nothing we can do, but we must always
-        // return a Response object
-        return new Response('Network error happened', {
-            status: 408,
-            headers: { 'Content-Type': 'text/plain' },
-        });
-    }
-};
-
-// Enable navigation preload
-const enableNavigationPreload = async () => {
-    if (self.registration.navigationPreload) {
-        // Enable navigation preloads!
-        await self.registration.navigationPreload.enable();
-    }
-    broadcast.postMessage({
-        message: 'called enableNavigationPreload'
-    })
-};
 
 self.addEventListener('activate', (event) => {
     event.waitUntil(enableNavigationPreload());
@@ -93,12 +40,17 @@ self.addEventListener('install', (event) => {
     })
 });
 
-self.addEventListener('fetch', (event) => {
-    event.respondWith(
-        cacheFirst({
-            request: event.request,
-            preloadResponsePromise: event.preloadResponse,
-            fallbackUrl: 'fallback.png',
+self.addEventListener('fetch', (e) => {
+    e.respondWith(
+        caches.match(e.request).then((r) => {
+            //console.log('[Service Worker] Fetching resource: ' + e.request.url);
+            return r || fetch(e.request).then((response) => {
+                return caches.open(cache_version).then((cache) => {
+                    //console.log('[Service Worker] Caching new resource: ' + e.request.url);
+                    //cache.put(e.request, response.clone());
+                    return response;
+                });
+            });
         })
     );
     broadcast.postMessage({
